@@ -794,17 +794,20 @@ class Board {
   }
 
   lock(tetromino) {
+    // 30%概率给这个方块附加产品名称（每个字填入一个格子，从最左边开始）
+    const productName = Math.random() < PRODUCT_LABEL_PROB
+      ? PRODUCT_NAMES[Math.floor(Math.random() * PRODUCT_NAMES.length)]
+      : null;
+    let charIndex = 0;
+
     for (let r = 0; r < tetromino.shape.length; r++) {
       for (let c = 0; c < tetromino.shape[r].length; c++) {
         if (tetromino.shape[r][c]) {
           const ny = tetromino.y + r;
           const nx = tetromino.x + c;
           if (ny >= 0 && ny < ROWS && nx >= 0 && nx < COLS) {
-            // 30%概率附加产品名称标签
-            const label = Math.random() < PRODUCT_LABEL_PROB
-              ? PRODUCT_NAMES[Math.floor(Math.random() * PRODUCT_NAMES.length)]
-              : null;
-            this.grid[ny][nx] = { color: tetromino.color, label };
+            const char = productName ? productName[charIndex++] : null;
+            this.grid[ny][nx] = { color: tetromino.color, char };
           }
         }
       }
@@ -820,7 +823,7 @@ class Board {
         const holes = new Set();
         while (holes.size < 2) holes.add(Math.floor(Math.random() * COLS));
         const dirtyRow = Array(COLS).fill(null).map((_, idx) =>
-          holes.has(idx) ? null : { color: COLORS.dirty, label: null }
+          holes.has(idx) ? null : { color: COLORS.dirty, char: null }
         );
         this.grid.push(dirtyRow);
       }
@@ -1429,8 +1432,8 @@ class TetrisBattle {
         if (cell) {
           const color = typeof cell === 'string' ? cell : cell.color;
           const isDirty = color === COLORS.dirty;
-          const label = typeof cell === 'object' ? cell.label : null;
-          this.drawBlock(ctx, c, r, color, isDirty, label);
+          const char = typeof cell === 'object' ? cell.char : null;
+          this.drawBlock(ctx, c, r, color, isDirty, char);
         }
       }
     }
@@ -1516,7 +1519,7 @@ class TetrisBattle {
     });
   }
 
-  drawBlock(ctx, x, y, color, isDirty = false, label = null) {
+  drawBlock(ctx, x, y, color, isDirty = false, char = null) {
     const px = x * BLOCK;
     const py = y * BLOCK;
     ctx.fillStyle = color;
@@ -1534,20 +1537,19 @@ class TetrisBattle {
       ctx.fillStyle = 'rgba(255,0,0,0.15)';
       ctx.fillRect(px+4, py+4, BLOCK-8, BLOCK-8);
     }
-    // 产品名称标签（只画在普通方块上，垃圾行不画）
-    if (label && !isDirty) {
+    // 产品名称字符（每个格子一个字，只画在普通方块上）
+    if (char && !isDirty) {
       ctx.save();
-      // 裁剪：只在这个方块区域内绘制
       ctx.beginPath();
       ctx.rect(px + 1, py + 1, BLOCK - 2, BLOCK - 2);
       ctx.clip();
-      ctx.fillStyle = 'rgba(0,0,0,0.75)';
-      ctx.fillRect(px + 1, py + BLOCK / 2 - 4, BLOCK - 2, 8);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 7px sans-serif';
+      ctx.font = 'bold 14px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(label, px + BLOCK / 2, py + BLOCK / 2);
+      ctx.shadowColor = '#000000';
+      ctx.shadowBlur = 3;
+      ctx.fillText(char, px + BLOCK / 2, py + BLOCK / 2);
       ctx.restore();
     }
   }
