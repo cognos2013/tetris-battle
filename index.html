@@ -903,8 +903,10 @@ class TetrisBattle {
       board: new Board(),
       current: null, next: null,
       dropTimer: 0, dropInterval: 1000,
-      canvas: null, ctx: null,
-      nextCanvas: null, nextCtx: null,
+      canvas: document.getElementById('player1-canvas'),
+      ctx: document.getElementById('player1-canvas').getContext('2d'),
+      nextCanvas: document.getElementById('p1-next'),
+      nextCtx: document.getElementById('p1-next').getContext('2d'),
       flash: 0, shake: 0,
       blocking: false, blockTimer: 0,
     };
@@ -912,15 +914,17 @@ class TetrisBattle {
       board: new Board(),
       current: null, next: null,
       dropTimer: 0, dropInterval: 1000,
-      canvas: null, ctx: null,
-      nextCanvas: null, nextCtx: null,
+      canvas: document.getElementById('player2-canvas'),
+      ctx: document.getElementById('player2-canvas').getContext('2d'),
+      nextCanvas: document.getElementById('p2-next'),
+      nextCtx: document.getElementById('p2-next').getContext('2d'),
       flash: 0, shake: 0,
       blocking: false, blockTimer: 0,
     };
     this.bag = [];
     this.keys = {};
     this.keyRepeat = {};
-    window.game = this; // for skill card onclick
+    window.game = this;
     this.setupControls();
   }
 
@@ -1504,7 +1508,11 @@ class TetrisBattle {
 // BOOTSTRAP
 // ============================================================
 const game = new TetrisBattle();
+window.game = game;
 
+// ============================================================
+// START BUTTON
+// ============================================================
 document.getElementById('start-btn').addEventListener('click', () => {
   document.getElementById('start-screen').style.display = 'none';
   runCountdown(() => game.init());

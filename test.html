@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head><title>Minimal Test</title></head>
+<body>
+<h1>Minimal RAF Test</h1>
+<p>Check console for RAF activity. Pieces should fall.</p>
+<canvas id="c" width="240" height="480" style="border:1px solid #f0f"></canvas>
+<script>
+const COLS = 10, ROWS = 20, BLOCK = 24;
+let y = 0;
+let dropTimer = 0;
+const DROP_INTERVAL = 1000;
+let paused = false;
+let animId = null;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+function spawnPiece() {
+  return { type: 'T', x: 4, y: 0 };
+}
+
+let current = spawnPiece();
+console.log('Spawned piece at y=' + current.y);
+
+function draw() {
+  ctx.fillStyle = '#1a0a2a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw piece
+  ctx.fillStyle = '#a000f0';
+  const px = current.x * BLOCK;
+  const py = current.y * BLOCK;
+  ctx.fillRect(px + 1, py + 1, BLOCK - 2, BLOCK - 2);
+
+  // Label
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px monospace';
+  ctx.fillText('y=' + current.y, 5, 15);
+}
+
+function loop(ts) {
+  console.log('LOOP', ts, 'y=' + current.y);
+
+  if (!paused) {
+    if (ts - dropTimer > DROP_INTERVAL) {
+      dropTimer = ts;
+      current.y++;
+      console.log('Drop! new y=' + current.y);
+    }
+  }
+
+  draw();
+  animId = requestAnimationFrame(loop);
+}
+
+// Start
+console.log('Starting loop...');
+animId = requestAnimationFrame(loop);
+</script>
+</body>
+</html>
