@@ -967,8 +967,8 @@ class TetrisBattle {
   }
 
   spawnPieceFor(player) {
-    player.current = player.next;
     player.next = this.spawnPiece();
+    player.current = player.next;
     player.current.x = Math.floor((COLS - player.current.shape[0].length) / 2);
     player.current.y = -1;
   }
