@@ -18,10 +18,12 @@
       align-items: center;
       justify-content: flex-start;
       min-height: 100vh;
-      overflow: hidden;
-      touch-action: none;
+      overflow-y: auto;
+      overflow-x: hidden;
+      touch-action: manipulation;
       user-select: none;
       padding: 0;
+      -webkit-overflow-scrolling: touch;
     }
 
     body::before {
@@ -766,9 +768,15 @@ class TetrisGame {
   }
 
   _calcBlock() {
-    // Make board fit screen width with 16px padding each side
-    const maxW = Math.min(window.innerWidth - 16, 360);
-    return Math.floor(maxW / COLS);
+    // Account for all other elements height:
+    // title~50 + hud~90 + progress~70 + next~90 + controls~180 + pause~50 + padding~60 = ~590px fixed
+    const fixedH = 590;
+    const availH = window.innerHeight - fixedH;
+    const maxByHeight = Math.floor(availH / ROWS);
+    // Width constraint: screen width - 16px padding
+    const maxByWidth = Math.floor((window.innerWidth - 16) / COLS);
+    // Use the smaller to ensure full board fits
+    return Math.min(maxByHeight, maxByWidth, 24); // cap at 24px for readability
   }
 
   _resize() {
