@@ -15,15 +15,17 @@
       font-family: 'Press Start 2P', 'Courier New', monospace;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      overflow-y: auto;
-      overflow-x: hidden;
+      height: 100dvh;
+      height: 100vh;
+      overflow: hidden;
       touch-action: manipulation;
       user-select: none;
       padding: 0;
-      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Fallback for browsers without dvh */
+    @supports not (height: 100dvh) {
+      body { height: window.innerHeight + 'px'; }
     }
 
     body::before {
@@ -42,26 +44,33 @@
     #game-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      flex: 1;
       width: 100%;
-      max-width: 400px;
-      padding: 8px 8px 16px;
-      gap: 8px;
+      max-width: 100%;
+      padding: 4px 6px 6px;
+      gap: 0;
+      overflow: hidden;
+      min-height: 0;
     }
 
     h1 {
-      font-size: 11px;
+      font-size: 9px;
       color: #0ff;
-      text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+      text-shadow: 0 0 8px #0ff;
       letter-spacing: 2px;
       text-align: center;
-      margin: 8px 0 4px;
+      margin: 0;
+      padding: 2px 0;
+      flex-shrink: 0;
     }
 
     #board-wrapper {
       position: relative;
       display: flex;
       justify-content: center;
+      flex: 1;
+      min-height: 0;
+      align-items: center;
     }
 
     canvas {
@@ -103,17 +112,18 @@
     /* HUD row */
     #hud {
       display: flex;
-      gap: 12px;
+      gap: 6px;
       width: 100%;
       justify-content: center;
+      flex-shrink: 0;
     }
     .hud-box {
       background: rgba(0,0,0,0.5);
       border: 1px solid #333;
-      padding: 6px 10px;
-      font-size: 6px;
-      line-height: 1.8;
-      min-width: 70px;
+      padding: 3px 6px;
+      font-size: 5px;
+      line-height: 1.6;
+      min-width: 60px;
       text-align: center;
     }
     .hud-box .label { color: #888; }
@@ -125,20 +135,22 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
+      flex-shrink: 0;
+      padding: 2px 0;
     }
     #progress-label {
-      font-size: 5px;
+      font-size: 4px;
       color: #ff0;
-      text-shadow: 0 0 5px #ff0;
+      text-shadow: 0 0 4px #ff0;
       letter-spacing: 1px;
     }
     #progress-bar-container {
       width: 100%;
-      height: 10px;
+      height: 6px;
       background: #111;
       border: 1px solid #ff0;
-      border-radius: 5px;
+      border-radius: 3px;
       overflow: hidden;
     }
     #progress-bar {
@@ -148,7 +160,7 @@
       transition: width 0.3s;
     }
     #progress-text {
-      font-size: 7px;
+      font-size: 5px;
       color: #ff0;
     }
 
@@ -156,39 +168,42 @@
     #next-section {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 6px;
+      gap: 8px;
+      font-size: 5px;
       color: #888;
+      flex-shrink: 0;
     }
     #next-label { color: #888; }
     #next-canvas {
       border: 1px solid #f0f;
-      box-shadow: 0 0 8px rgba(255,0,255,0.2);
+      box-shadow: 0 0 6px rgba(255,0,255,0.2);
+      flex-shrink: 0;
     }
 
     /* Touch controls */
     #controls {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
-      margin-top: 4px;
+      flex-shrink: 0;
+      padding: 4px 0;
     }
 
     .touch-row {
       display: flex;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .touch-btn {
-      width: 64px;
-      height: 64px;
-      border-radius: 12px;
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
       border: 2px solid;
       background: rgba(20, 10, 40, 0.9);
       font-family: 'Press Start 2P', monospace;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -202,48 +217,48 @@
       transform: scale(0.92);
     }
 
-    #btn-left  { border-color: #0ff; color: #0ff; box-shadow: 0 0 10px rgba(0,255,255,0.3); }
-    #btn-left:active, #btn-left.pressed { background: rgba(0,255,255,0.2); box-shadow: 0 0 20px rgba(0,255,255,0.6); }
+    #btn-left  { border-color: #0ff; color: #0ff; box-shadow: 0 0 8px rgba(0,255,255,0.3); }
+    #btn-left:active, #btn-left.pressed { background: rgba(0,255,255,0.2); box-shadow: 0 0 16px rgba(0,255,255,0.6); }
 
-    #btn-down  { border-color: #ff0; color: #ff0; box-shadow: 0 0 10px rgba(255,255,0,0.3); }
-    #btn-down:active, #btn-down.pressed { background: rgba(255,255,0,0.2); box-shadow: 0 0 20px rgba(255,255,0,0.6); }
+    #btn-down  { border-color: #ff0; color: #ff0; box-shadow: 0 0 8px rgba(255,255,0,0.3); }
+    #btn-down:active, #btn-down.pressed { background: rgba(255,255,0,0.2); box-shadow: 0 0 16px rgba(255,255,0,0.6); }
 
-    #btn-right { border-color: #0ff; color: #0ff; box-shadow: 0 0 10px rgba(0,255,255,0.3); }
-    #btn-right:active, #btn-right.pressed { background: rgba(0,255,255,0.2); box-shadow: 0 0 20px rgba(0,255,255,0.6); }
+    #btn-right { border-color: #0ff; color: #0ff; box-shadow: 0 0 8px rgba(0,255,255,0.3); }
+    #btn-right:active, #btn-right.pressed { background: rgba(0,255,255,0.2); box-shadow: 0 0 16px rgba(0,255,255,0.6); }
 
     #btn-rotate {
-      width: 64px;
-      height: 64px;
-      border-radius: 12px;
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
       border: 2px solid #f0f;
       background: rgba(20, 10, 40, 0.9);
       color: #f0f;
-      font-size: 10px;
-      font-family: 'Press Start 2P', monospace;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 10px rgba(255,0,255,0.3);
-      -webkit-user-select: none;
-      user-select: none;
-    }
-    #btn-rotate:active { background: rgba(255,0,255,0.2); transform: scale(0.92); }
-
-    #btn-drop {
-      width: 64px;
-      height: 64px;
-      border-radius: 12px;
-      border: 2px solid #f00;
-      background: rgba(40, 0, 0, 0.9);
-      color: #f00;
       font-size: 8px;
       font-family: 'Press Start 2P', monospace;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 10px rgba(255,0,0,0.3);
+      box-shadow: 0 0 8px rgba(255,0,255,0.3);
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    #btn-rotate:active { background: rgba(255,0,255,0.2); transform: scale(0.92); }
+
+    #btn-drop {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      border: 2px solid #f00;
+      background: rgba(40, 0, 0, 0.9);
+      color: #f00;
+      font-size: 7px;
+      font-family: 'Press Start 2P', monospace;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px rgba(255,0,0,0.3);
       -webkit-user-select: none;
       user-select: none;
     }
@@ -251,14 +266,14 @@
 
     #pause-btn {
       font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      padding: 8px 16px;
+      font-size: 6px;
+      padding: 6px 12px;
       background: transparent;
       border: 1px solid #555;
       color: #555;
       cursor: pointer;
       border-radius: 4px;
-      margin-top: 4px;
+      flex-shrink: 0;
     }
     #pause-btn:active { background: rgba(85,85,85,0.2); }
 
@@ -764,30 +779,39 @@ class TetrisGame {
     this.keys = {};
     window.game = this;
 
+    // Size canvas to fit container before setting up controls
+    this._resize();
     this._setupTouchControls();
+    this._setupResizeObserver();
   }
 
   _calcBlock() {
-    // Account for all other elements height:
-    // title~50 + hud~90 + progress~70 + next~90 + controls~180 + pause~50 + padding~60 = ~590px fixed
-    const fixedH = 590;
-    const availH = window.innerHeight - fixedH;
-    const maxByHeight = Math.floor(availH / ROWS);
-    // Width constraint: screen width - 16px padding
-    const maxByWidth = Math.floor((window.innerWidth - 16) / COLS);
-    // Use the smaller to ensure full board fits
-    return Math.min(maxByHeight, maxByWidth, 24); // cap at 24px for readability
+    // Measure the actual available space in #board-wrapper
+    const wrapper = document.getElementById('board-wrapper');
+    const availW = wrapper.clientWidth;
+    const availH = wrapper.clientHeight;
+    return Math.floor(Math.min(availW / COLS, availH / ROWS));
   }
 
   _resize() {
-    this.BLOCK = this._calcBlock();
+    const newBlock = this._calcBlock();
+    if (newBlock === this.BLOCK) return; // no change
+    this.BLOCK = newBlock;
     this.canvas.width = COLS * this.BLOCK;
     this.canvas.height = ROWS * this.BLOCK;
-    // Re-render immediately
-    if (this.current) this.render();
+  }
+
+  _setupResizeObserver() {
+    const wrapper = document.getElementById('board-wrapper');
+    this._resizeObserver = new ResizeObserver(() => {
+      this._resize();
+      this.render(); // re-render at new size immediately
+    });
+    this._resizeObserver.observe(wrapper);
   }
 
   init() {
+    this._resize(); // recalculate board size in case viewport changed
     this.board = new Board();
     this.current = null;
     this.next = null;
@@ -861,8 +885,7 @@ class TetrisGame {
       this.dropTimer = performance.now();
     });
 
-    // Window resize
-    window.addEventListener('resize', () => this._resize());
+    // ResizeObserver handles canvas sizing dynamically
   }
 
   _tapButton(id, fn) {
