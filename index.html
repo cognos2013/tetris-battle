@@ -7,11 +7,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       background: #0a0a1a;
@@ -25,7 +21,6 @@
       overflow: hidden;
     }
 
-    /* 背景网格动画 */
     body::before {
       content: '';
       position: fixed;
@@ -57,7 +52,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .player-label {
@@ -77,7 +72,6 @@
       border-color: #f0f;
       box-shadow: 0 0 20px rgba(255,0,255,0.3), inset 0 0 20px rgba(255,0,255,0.05);
     }
-
     #player2-canvas {
       border-color: #0ff;
       box-shadow: 0 0 20px rgba(0,255,255,0.3), inset 0 0 20px rgba(0,255,255,0.05);
@@ -87,13 +81,10 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      min-width: 120px;
+      min-width: 130px;
     }
 
-    .side-panel canvas {
-      border: none;
-      box-shadow: none;
-    }
+    .side-panel canvas { border: none; box-shadow: none; }
 
     .stat-box {
       background: rgba(0,0,0,0.5);
@@ -103,7 +94,6 @@
       line-height: 1.8;
       width: 100%;
     }
-
     .stat-box .label { color: #888; }
     .stat-box .value { color: #0ff; }
     .stat-box .value.p1 { color: #f0f; }
@@ -115,17 +105,100 @@
       border: 1px solid #333;
       position: relative;
     }
-
     .charge-bar {
       height: 100%;
       background: linear-gradient(90deg, #0f0, #ff0, #f00);
       transition: width 0.1s;
     }
+    .charge-label { font-size: 5px; color: #888; margin-top: 2px; }
 
-    .charge-label {
+    /* Skill cards */
+    .skill-cards {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .skill-card {
+      width: 58px;
+      height: 70px;
+      background: rgba(20, 10, 40, 0.9);
+      border: 2px solid #a0a;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .skill-card:hover:not(.used):not(.cooldown) {
+      transform: translateY(-3px);
+      box-shadow: 0 0 15px rgba(160,0,255,0.6);
+      border-color: #f0f;
+    }
+    .skill-card.used {
+      opacity: 0.3;
+      border-color: #333;
+      cursor: not-allowed;
+    }
+    .skill-card.cooldown {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .skill-card .card-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+    .skill-card .card-name {
+      font-size: 4px;
+      color: #ccc;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .skill-card .card-key {
+      position: absolute;
+      top: 2px;
+      right: 3px;
       font-size: 5px;
-      color: #888;
-      margin-top: 2px;
+      color: #666;
+    }
+    .skill-card .cooldown-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.7);
+      font-size: 4px;
+      color: #fff;
+      text-align: center;
+      padding: 2px;
+    }
+
+    /* Shield indicator */
+    .shield-indicator {
+      display: none;
+      font-size: 5px;
+      color: #0af;
+      text-align: center;
+      animation: shieldPulse 0.5s infinite alternate;
+    }
+    .shield-indicator.active { display: block; }
+    @keyframes shieldPulse {
+      from { opacity: 0.5; }
+      to { opacity: 1; text-shadow: 0 0 5px #0af; }
+    }
+
+    /* Shield visual on canvas */
+    #shield-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      pointer-events: none;
+      border: none;
+      box-shadow: none;
     }
 
     #vs-divider {
@@ -140,6 +213,15 @@
       gap: 16px;
     }
 
+    /* Attack arc overlay canvas */
+    #arc-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 50;
+    }
+
     #game-over-screen {
       display: none;
       position: fixed;
@@ -152,12 +234,13 @@
       justify-content: center;
       gap: 20px;
     }
-
     #game-over-screen.active { display: flex; }
-
-    #game-over-text {
-      font-size: 20px;
-      text-shadow: 0 0 20px currentColor;
+    #game-over-text { font-size: 20px; text-shadow: 0 0 20px currentColor; }
+    #game-over-stats {
+      font-size: 7px;
+      color: #aaa;
+      text-align: center;
+      line-height: 2.2;
     }
 
     #restart-btn {
@@ -170,7 +253,6 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-
     #restart-btn:hover {
       background: #0ff;
       color: #0a0a1a;
@@ -191,7 +273,6 @@
       color: #ff0;
       text-shadow: 0 0 40px #ff0;
     }
-
     #countdown.active { display: flex; }
 
     #start-screen {
@@ -202,29 +283,29 @@
       gap: 24px;
       z-index: 101;
     }
+    #start-screen h2 { font-size: 10px; color: #0ff; text-shadow: 0 0 10px #0ff; }
+    #start-screen p { font-size: 7px; color: #888; text-align: center; line-height: 2; }
 
-    #start-screen h2 {
-      font-size: 10px;
-      color: #0ff;
-      text-shadow: 0 0 10px #0ff;
+    .key-hint { font-size: 6px; color: #555; text-align: center; margin-top: 12px; }
+
+    /* Blocked flash on canvas border */
+    .shielded { animation: shieldFlash 0.3s; }
+    @keyframes shieldFlash {
+      0% { box-shadow: 0 0 40px #0af, inset 0 0 30px rgba(0,170,255,0.3); }
+      100% { box-shadow: 0 0 20px rgba(255,0,255,0.3); }
     }
 
-    #start-screen p {
-      font-size: 7px;
-      color: #888;
-      text-align: center;
-      line-height: 2;
+    .freeze-effect { animation: freezeShake 0.1s infinite alternate; }
+    @keyframes freezeShake {
+      from { transform: translateX(-1px); }
+      to { transform: translateX(1px); }
     }
-
-    .key-hint {
-      font-size: 6px;
-      color: #555;
-      text-align: center;
-      margin-top: 12px;
-    }
+    .confusion-effect { filter: hue-rotate(180deg); }
   </style>
 </head>
 <body>
+
+<canvas id="arc-canvas"></canvas>
 
 <div id="start-screen">
   <h1>🧊 TETRIS BATTLE</h1>
@@ -234,7 +315,7 @@
   </button>
   <div class="key-hint">
     P1: WASD / ←↑↓→ &nbsp;|&nbsp; P2: IJKL / 8579<br>
-    空格 = 硬降 &nbsp;|&nbsp; Q = 暂停
+    空格 = 硬降 &nbsp;|&nbsp; Q = 暂停 &nbsp;|&nbsp; F = 技能卡 &nbsp;|&nbsp; 右Shift = 格挡
   </div>
 </div>
 
@@ -242,12 +323,13 @@
 
 <div id="game-over-screen">
   <div id="game-over-text"></div>
+  <div id="game-over-stats"></div>
   <button id="restart-btn">再来一局</button>
 </div>
 
 <div id="game-wrapper" style="display:none">
   <!-- Player 1 -->
-  <div class="player-panel">
+  <div class="player-panel" id="p1-panel">
     <div class="player-label">PLAYER 1 — PINK</div>
     <canvas id="player1-canvas" width="240" height="480"></canvas>
     <div class="side-panel">
@@ -263,6 +345,8 @@
         </div>
         <div class="charge-label" id="p1-charge-label">0%</div>
       </div>
+      <div class="shield-indicator" id="p1-shield">🛡️ SHIELD ACTIVE</div>
+      <div class="skill-cards" id="p1-cards"></div>
       <canvas id="p1-next" width="80" height="80"></canvas>
     </div>
   </div>
@@ -270,7 +354,7 @@
   <div id="vs-divider">⚔️</div>
 
   <!-- Player 2 -->
-  <div class="player-panel">
+  <div class="player-panel" id="p2-panel">
     <div class="player-label">PLAYER 2 — CYAN</div>
     <canvas id="player2-canvas" width="240" height="480"></canvas>
     <div class="side-panel">
@@ -286,6 +370,8 @@
         </div>
         <div class="charge-label" id="p2-charge-label">0%</div>
       </div>
+      <div class="shield-indicator" id="p2-shield">🛡️ SHIELD ACTIVE</div>
+      <div class="skill-cards" id="p2-cards"></div>
       <canvas id="p2-next" width="80" height="80"></canvas>
     </div>
   </div>
@@ -297,13 +383,14 @@
 // ============================================================
 const COLS = 10;
 const ROWS = 20;
-const BLOCK = 24; // pixels per block
+const BLOCK = 24;
 
 const COLORS = {
   I: '#00f0f0', O: '#f0f000', T: '#a000f0',
   S: '#00f000', Z: '#f00000', J: '#0000f0', L: '#f0a000',
   ghost: 'rgba(255,255,255,0.15)',
   ghostBorder: 'rgba(255,255,255,0.4)',
+  dirty: '#550000',
 };
 
 const SHAPES = {
@@ -316,13 +403,12 @@ const SHAPES = {
   L: [[0,0,1],[1,1,1],[0,0,0]],
 };
 
-// SRS kick data (simplified)
 const KICKS = {
   normal: [
-    [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],  // 0->R
-    [[0,0],[1,0],[1,-1],[0,2],[1,2]],       // R->2
-    [[0,0],[1,0],[1,1],[0,-2],[1,-2]],       // 2->L
-    [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],     // L->0
+    [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+    [[0,0],[1,0],[1,-1],[0,2],[1,2]],
+    [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+    [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
   ],
   I: [
     [[0,0],[-2,0],[1,0],[-2,-1],[1,2]],
@@ -331,6 +417,302 @@ const KICKS = {
     [[0,0],[1,0],[-2,0],[1,-2],[-2,1]],
   ]
 };
+
+// ============================================================
+// SOUND MANAGER (Web Audio API)
+// ============================================================
+class SoundManager {
+  constructor() {
+    this.ctx = null;
+    this.masterGain = null;
+    this.enabled = true;
+    this._init();
+  }
+
+  _init() {
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = 0.4;
+      this.masterGain.connect(this.ctx.destination);
+    } catch(e) {
+      this.enabled = false;
+    }
+  }
+
+  _resume() {
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  }
+
+  _osc(freq, type, duration, gainVal = 0.3, attack = 0.01, release = 0.05) {
+    if (!this.enabled) return;
+    this._resume();
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+    g.gain.setValueAtTime(0, this.ctx.currentTime);
+    g.gain.linearRampToValueAtTime(gainVal, this.ctx.currentTime + attack);
+    g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + duration - release);
+    osc.connect(g);
+    g.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + duration);
+  }
+
+  _noise(duration, gainVal = 0.15) {
+    if (!this.enabled) return;
+    this._resume();
+    const bufSize = this.ctx.sampleRate * duration;
+    const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const g = this.ctx.createGain();
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'highpass';
+    f.frequency.value = 800;
+    g.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + duration);
+    src.connect(f);
+    f.connect(g);
+    g.connect(this.masterGain);
+    src.start();
+  }
+
+  drop() {
+    this._osc(180, 'square', 0.06, 0.15);
+  }
+
+  lock() {
+    this._osc(300, 'square', 0.08, 0.2);
+  }
+
+  clear(lines) {
+    const baseFreq = 300 + lines * 80;
+    const duration = 0.15 + lines * 0.05;
+    // Ascending arpeggio
+    for (let i = 0; i < lines; i++) {
+      setTimeout(() => {
+        this._osc(baseFreq + i * 150, 'square', 0.12, 0.25);
+      }, i * 60);
+    }
+    if (lines >= 4) {
+      setTimeout(() => this._osc(800, 'sawtooth', 0.3, 0.3), 200);
+    }
+  }
+
+  attack() {
+    this._osc(600, 'sawtooth', 0.15, 0.25);
+    this._osc(900, 'sawtooth', 0.1, 0.15);
+  }
+
+  hit() {
+    this._osc(80, 'sawtooth', 0.3, 0.4);
+    this._noise(0.15, 0.2);
+  }
+
+  shieldBlock() {
+    this._osc(1200, 'sine', 0.2, 0.3);
+    this._osc(1500, 'sine', 0.15, 0.2);
+  }
+
+  victory() {
+    const melody = [523, 659, 784, 1047, 784, 1047];
+    melody.forEach((f, i) => {
+      setTimeout(() => this._osc(f, 'square', 0.25, 0.3), i * 150);
+    });
+  }
+
+  defeat() {
+    const melody = [400, 350, 300, 250];
+    melody.forEach((f, i) => {
+      setTimeout(() => this._osc(f, 'sawtooth', 0.3, 0.25), i * 200);
+    });
+  }
+
+  skillCard() {
+    this._osc(800, 'sine', 0.1, 0.3);
+    this._osc(1200, 'sine', 0.15, 0.25);
+  }
+
+  freeze() {
+    this._osc(2000, 'sine', 0.1, 0.2);
+    this._noise(0.2, 0.1);
+  }
+
+  confusion() {
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => this._osc(300 + Math.random() * 600, 'square', 0.08, 0.15), i * 50);
+    }
+  }
+
+  cleanRow() {
+    this._osc(500, 'sine', 0.2, 0.25);
+  }
+
+  chargeFull() {
+    this._osc(440, 'sine', 0.1, 0.2);
+    setTimeout(() => this._osc(880, 'sine', 0.15, 0.25), 100);
+  }
+}
+
+// ============================================================
+// SKILL CARDS
+// ============================================================
+const SKILL_DEFINITIONS = [
+  { id: 'cleaner',    icon: '🧹', name: '清洁工', key: 'F/.',  desc: '清底部1行',     color: '#0f0', p1Key: 'KeyF',     p2Key: 'NumpadDecimal' },
+  { id: 'freeze',     icon: '❄️', name: '冰冻',    key: 'F/.',  desc: '冻对手2秒',    color: '#0af', p1Key: 'KeyF',     p2Key: 'NumpadDecimal' },
+  { id: 'confusion',  icon: '🔄', name: '混乱',    key: 'F/.',  desc: '对手方向反转3秒', color: '#fa0', p1Key: 'KeyF',   p2Key: 'NumpadDecimal' },
+  { id: 'doom',       icon: '💀', name: '绝命',    key: 'F/.',  desc: '送6行脏方块',   color: '#f00', p1Key: 'KeyF',    p2Key: 'NumpadDecimal' },
+  { id: 'shield',     icon: '🛡️', name: '护盾',    key: 'F/.',  desc: '免疫1次攻击3秒', color: '#0af', p1Key: 'KeyF',    p2Key: 'NumpadDecimal' },
+  { id: 'frenzy',     icon: '🔥', name: '狂热',    key: 'F/.',  desc: '加速4秒',       color: '#f80', p1Key: 'KeyF',     p2Key: 'NumpadDecimal' },
+  { id: 'thunder',    icon: '⚡', name: '雷击',    key: 'F/.',  desc: '清所有脏行',    color: '#ff0', p1Key: 'KeyF',     p2Key: 'NumpadDecimal' },
+  { id: 'diamond',    icon: '💎', name: '钻石',    key: 'F/.',  desc: '蓄力翻倍5秒',   color: '#0ff', p1Key: 'KeyF',     p2Key: 'NumpadDecimal' },
+];
+
+class SkillCardManager {
+  constructor() {
+    this.deck = [];
+    this.p1Cards = [];
+    this.p2Cards = [];
+  }
+
+  buildDeck() {
+    // 4 copies of each card, then shuffle (Fisher-Yates)
+    this.deck = [];
+    SKILL_DEFINITIONS.forEach(def => {
+      for (let i = 0; i < 4; i++) this.deck.push({ ...def, uid: def.id + i });
+    });
+    for (let i = this.deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+    }
+  }
+
+  deal() {
+    this.p1Cards = [this.deck.pop(), this.deck.pop()];
+    this.p2Cards = [this.deck.pop(), this.deck.pop()];
+  }
+
+  renderCards(playerEl, cards, playerId) {
+    const container = document.getElementById(`p${playerId}-cards`);
+    container.innerHTML = '';
+    cards.forEach((card, idx) => {
+      const el = document.createElement('div');
+      el.className = 'skill-card' + (card.used ? ' used' : '');
+      el.dataset.player = playerId;
+      el.dataset.idx = idx;
+      el.innerHTML = `
+        <span class="card-key">${card.key}</span>
+        <span class="card-icon">${card.icon}</span>
+        <span class="card-name">${card.name}</span>
+      `;
+      if (!card.used) {
+        el.addEventListener('click', () => {
+          window.game.useSkill(playerId, idx);
+        });
+      }
+      container.appendChild(el);
+    });
+  }
+
+  renderAll() {
+    this.renderCards('p1', this.p1Cards, 1);
+    this.renderCards('p2', this.p2Cards, 2);
+  }
+}
+
+// ============================================================
+// ATTACK ARC ANIMATION
+// ============================================================
+class AttackArc {
+  constructor(game) {
+    this.game = game;
+    this.arcs = [];
+    this.canvas = document.getElementById('arc-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this._resize();
+    window.addEventListener('resize', () => this._resize());
+    this._raf = null;
+    this._loop();
+  }
+
+  _resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  add(fromPlayer, toPlayer, lines, color) {
+    // from: left side (P1) or right side (P2)
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    const midY = H / 2;
+    const sx = fromPlayer === 1 ? W * 0.2 : W * 0.8;
+    const ex = toPlayer === 1 ? W * 0.2 : W * 0.8;
+    const arcHeight = 80 + lines * 15;
+    const duration = 40; // frames
+    this.arcs.push({
+      sx, sy: midY, ex, ey: midY, arcHeight,
+      color, lines, frame: 0, totalFrames: duration
+    });
+  }
+
+  _loop() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.arcs = this.arcs.filter(a => {
+      a.frame++;
+      const t = a.frame / a.totalFrames;
+      const x = a.sx + (a.ex - a.sx) * t;
+      const y = a.sy - a.arcHeight * Math.sin(Math.PI * t);
+      const size = 6 + a.lines * 2;
+
+      // Glow
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, size + 8, 0, Math.PI * 2);
+      const grd = this.ctx.createRadialGradient(x, y, 0, x, y, size + 8);
+      grd.addColorStop(0, a.color + 'aa');
+      grd.addColorStop(1, a.color + '00');
+      this.ctx.fillStyle = grd;
+      this.ctx.fill();
+
+      // Core dot
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, size, 0, Math.PI * 2);
+      this.ctx.fillStyle = a.color;
+      this.ctx.fill();
+
+      // Trailing dots
+      for (let i = 1; i <= 3; i++) {
+        const pt = Math.max(0, t - i * 0.03);
+        const px = a.sx + (a.ex - a.sx) * pt;
+        const py = a.sy - a.arcHeight * Math.sin(Math.PI * pt);
+        this.ctx.globalAlpha = (1 - i * 0.3) * (1 - t);
+        this.ctx.beginPath();
+        this.ctx.arc(px, py, size * 0.5, 0, Math.PI * 2);
+        this.ctx.fillStyle = '#fff';
+        this.ctx.fill();
+      }
+      this.ctx.globalAlpha = 1;
+
+      // Impact burst at end
+      if (t >= 1) {
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2;
+          const dist = 20 + Math.random() * 15;
+          this.ctx.beginPath();
+          this.ctx.arc(a.ex + Math.cos(angle) * dist, a.ey + Math.sin(angle) * dist, 4, 0, Math.PI * 2);
+          this.ctx.fillStyle = a.color + '88';
+          this.ctx.fill();
+        }
+      }
+
+      return a.frame < a.totalFrames + 10;
+    });
+    this._raf = requestAnimationFrame(() => this._loop());
+  }
+}
 
 // ============================================================
 // TETROMINO
@@ -350,7 +732,7 @@ class Tetromino {
       row.map((_, c) => this.shape[n-1-c][r])
     );
     const kicks = this.type === 'I' ? KICKS.I : KICKS.normal;
-    const state = (dir === 1 ? 0 : 2); // simplified
+    const state = (dir === 1 ? 0 : 2);
     for (const [dx, dy] of kicks[state]) {
       const nx = this.x + dx;
       const ny = this.y - dy;
@@ -374,9 +756,17 @@ class Board {
     this.lines = 0;
     this.score = 0;
     this.level = 1;
-    this.attackQueue = 0; // incoming dirty lines
-    this.charge = 0; // 0-100
-    this.attackFlash = 0; // flash timer when hit
+    this.attackQueue = 0;
+    this.charge = 0;
+    this.attackFlash = 0;
+    // Skill effects state
+    this.freezeTimer = 0;    // frames of freeze
+    this.confusionTimer = 0; // frames of reversed controls
+    this.frenzyTimer = 0;    // frames of faster drop
+    this.diamondTimer = 0;  // frames of double charge
+    this.shieldActive = false;
+    this.shieldTimer = 0;   // frames remaining for shield
+    this.shieldCooldown = 0; // frames before shield available again
   }
 
   collides(shape, px, py) {
@@ -410,17 +800,17 @@ class Board {
   }
 
   applyAttackQueue() {
-    for (let i = 0; i < this.attackQueue; i++) {
-      // Insert dirty row at bottom, shift everything up
-      this.grid.shift();
-      // Create dirty row with 2 random holes
-      const holes = new Set();
-      while (holes.size < 2) holes.add(Math.floor(Math.random() * COLS));
-      const dirtyRow = Array(COLS).fill('#550000');
-      holes.forEach(h => dirtyRow[h] = null);
-      this.grid.push(dirtyRow);
+    if (this.attackQueue > 0) {
+      for (let i = 0; i < this.attackQueue; i++) {
+        this.grid.shift();
+        const holes = new Set();
+        while (holes.size < 2) holes.add(Math.floor(Math.random() * COLS));
+        const dirtyRow = Array(COLS).fill(COLORS.dirty);
+        holes.forEach(h => dirtyRow[h] = null);
+        this.grid.push(dirtyRow);
+      }
+      this.attackQueue = 0;
     }
-    this.attackQueue = 0;
   }
 
   clearLines() {
@@ -430,14 +820,41 @@ class Board {
         this.grid.splice(r, 1);
         this.grid.unshift(Array(COLS).fill(null));
         cleared++;
-        r++; // recheck same row index
+        r++;
       }
     }
     if (cleared > 0) {
       this.lines += cleared;
-      this.score += [0, 100, 300, 500, 800][cleared] * this.level;
+      const mul = this.diamondTimer > 0 ? 2 : 1;
+      this.score += [0, 100, 300, 500, 800][cleared] * this.level * mul;
       this.level = Math.floor(this.lines / 10) + 1;
-      this.charge = Math.min(100, this.charge + cleared * 15);
+      this.charge = Math.min(100, this.charge + cleared * 15 * mul);
+    }
+    return cleared;
+  }
+
+  clearBottomNormalRow() {
+    // Find first non-dirty row from bottom
+    for (let r = ROWS - 1; r >= 0; r--) {
+      const hasDirty = this.grid[r].some(c => c === COLORS.dirty);
+      if (!hasDirty && this.grid[r].some(c => c !== null)) {
+        this.grid.splice(r, 1);
+        this.grid.unshift(Array(COLS).fill(null));
+        return true;
+      }
+    }
+    return false;
+  }
+
+  clearAllDirtyRows() {
+    let cleared = 0;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (this.grid[r].some(c => c === COLORS.dirty)) {
+        this.grid.splice(r, 1);
+        this.grid.unshift(Array(COLS).fill(null));
+        cleared++;
+        r++;
+      }
     }
     return cleared;
   }
@@ -451,6 +868,20 @@ class Board {
   gameOver() {
     return this.grid[0].some(cell => cell !== null);
   }
+
+  tickEffects() {
+    if (this.freezeTimer > 0) this.freezeTimer--;
+    if (this.confusionTimer > 0) this.confusionTimer--;
+    if (this.frenzyTimer > 0) this.frenzyTimer--;
+    if (this.diamondTimer > 0) this.diamondTimer--;
+    if (this.shieldTimer > 0) {
+      this.shieldTimer--;
+      this.shieldActive = true;
+    } else {
+      this.shieldActive = false;
+    }
+    if (this.shieldCooldown > 0) this.shieldCooldown--;
+  }
 }
 
 // ============================================================
@@ -459,71 +890,67 @@ class Board {
 class TetrisBattle {
   constructor() {
     this.paused = false;
-    this.gameOver = false;
+    this.gameOverFlag = false;
     this.animFrame = null;
     this.effects = [];
+    this.sound = new SoundManager();
+    this.skills = new SkillCardManager();
+    this.arc = new AttackArc(this);
+    this.p1Stats = { lines: 0, score: 0 };
+    this.p2Stats = { lines: 0, score: 0 };
 
     this.p1 = {
       board: new Board(),
-      current: null,
-      next: null,
-      dropTimer: 0,
-      dropInterval: 1000,
-      canvas: document.getElementById('player1-canvas'),
-      ctx: null,
-      nextCanvas: document.getElementById('p1-next'),
-      nextCtx: null,
-      flash: 0,
-      shake: 0,
+      current: null, next: null,
+      dropTimer: 0, dropInterval: 1000,
+      canvas: null, ctx: null,
+      nextCanvas: null, nextCtx: null,
+      flash: 0, shake: 0,
+      blocking: false, blockTimer: 0,
     };
-
     this.p2 = {
       board: new Board(),
-      current: null,
-      next: null,
-      dropTimer: 0,
-      dropInterval: 1000,
-      canvas: document.getElementById('player2-canvas'),
-      ctx: null,
-      nextCanvas: document.getElementById('p2-next'),
-      nextCtx: null,
-      flash: 0,
-      shake: 0,
+      current: null, next: null,
+      dropTimer: 0, dropInterval: 1000,
+      canvas: null, ctx: null,
+      nextCanvas: null, nextCtx: null,
+      flash: 0, shake: 0,
+      blocking: false, blockTimer: 0,
     };
-
     this.bag = [];
-
-    // Setup canvases
-    for (const p of [this.p1, this.p2]) {
-      p.ctx = p.canvas.getContext('2d');
-      p.nextCtx = p.nextCanvas.getContext('2d');
-    }
-
     this.keys = {};
     this.keyRepeat = {};
+    window.game = this; // for skill card onclick
     this.setupControls();
   }
 
   init() {
     this.bag = [];
-    this.gameOver = false;
+    this.gameOverFlag = false;
     this.paused = false;
+    this.effects = [];
+    this.p1Stats = { lines: 0, score: 0 };
+    this.p2Stats = { lines: 0, score: 0 };
 
     for (const p of [this.p1, this.p2]) {
       p.board = new Board();
-      p.current = null;
-      p.next = this.spawnPiece();
-      p.dropTimer = 0;
-      p.dropInterval = 1000;
-      p.flash = 0;
-      p.shake = 0;
+      p.current = null; p.next = null;
+      p.dropTimer = 0; p.dropInterval = 1000;
+      p.flash = 0; p.shake = 0;
+      p.blocking = false; p.blockTimer = 0;
     }
+
+    this.skills.buildDeck();
+    this.skills.deal();
+    this.skills.renderAll();
 
     this.spawnPieceFor(this.p1);
     this.spawnPieceFor(this.p2);
 
     document.getElementById('game-wrapper').style.display = 'flex';
     document.getElementById('game-over-screen').classList.remove('active');
+    document.getElementById('p1-shield').classList.remove('active');
+    document.getElementById('p2-shield').classList.remove('active');
 
     this.loop(performance.now());
   }
@@ -531,7 +958,6 @@ class TetrisBattle {
   getNextFromBag() {
     if (this.bag.length === 0) {
       this.bag = Object.keys(SHAPES);
-      // Fisher-Yates shuffle
       for (let i = this.bag.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [this.bag[i], this.bag[j]] = [this.bag[j], this.bag[i]];
@@ -543,14 +969,12 @@ class TetrisBattle {
   spawnPieceFor(player) {
     player.current = player.next;
     player.next = this.spawnPiece();
-    // Center the piece
     player.current.x = Math.floor((COLS - player.current.shape[0].length) / 2);
     player.current.y = -1;
   }
 
   spawnPiece() {
-    const t = new Tetromino(this.getNextFromBag());
-    return t;
+    return new Tetromino(this.getNextFromBag());
   }
 
   // ---- Controls ----
@@ -563,84 +987,209 @@ class TetrisBattle {
         return;
       }
 
-      if (this.paused || this.gameOver) return;
+      if (this.paused || this.gameOverFlag) return;
 
-      // P1 controls: WASD + arrows
-      this.handleInput(this.p1, e.code, true);
-      // P2 controls: IJKL + numpad
-      this.handleInput(this.p2, e.code, true);
+      // Skill card activation - F (P1) / NumpadDecimal (P2)
+      if (e.code === 'KeyF') {
+        this.activateNextSkill(1);
+        e.preventDefault();
+      }
+      if (e.code === 'NumpadDecimal') {
+        this.activateNextSkill(2);
+        e.preventDefault();
+      }
+
+      // P1 controls
+      this.handleInput(this.p1, e.code, true, 1);
+      // P2 controls
+      this.handleInput(this.p2, e.code, true, 2);
     });
 
     document.addEventListener('keyup', e => {
       this.keys[e.code] = false;
       this.keyRepeat[e.code] = false;
+      // Stop blocking
+      if (e.code === 'ShiftRight' || e.code === 'ShiftLeft') {
+        if (e.code === 'ShiftRight') this.p2.blocking = false;
+        else this.p1.blocking = false;
+      }
+    });
+
+    // Right Shift = P1 block, NumpadEnter = P2 block
+    document.addEventListener('keydown', e => {
+      if (e.code === 'ShiftRight') { this.p1.blocking = true; e.preventDefault(); }
+      if (e.code === 'NumpadEnter') { this.p2.blocking = true; e.preventDefault(); }
     });
   }
 
-  handleInput(player, code, press) {
-    const p = player === this.p1;
-    const left = p ? ['KeyA', 'ArrowLeft', 'Numpad4'] : ['KeyI', 'Numpad4'];
-    const right = p ? ['KeyD', 'ArrowRight', 'Numpad6'] : ['KeyL', 'Numpad6'];
-    const down = p ? ['KeyS', 'ArrowDown', 'Numpad5'] : ['KeyK', 'Numpad5'];
-    const up = p ? ['KeyW', 'ArrowUp', 'Numpad8'] : ['KeyJ', 'Numpad8'];
-    const drop = p ? ['Space', 'Enter'] : ['Numpad0', 'NumpadEnter'];
+  handleInput(player, code, press, pId) {
+    const isP1 = pId === 1;
+    const left  = isP1 ? ['KeyA','ArrowLeft']  : ['KeyI','Numpad4'];
+    const right = isP1 ? ['KeyD','ArrowRight'] : ['KeyL','Numpad6'];
+    const down  = isP1 ? ['KeyS','ArrowDown']  : ['KeyK','Numpad5'];
+    const up    = isP1 ? ['KeyW','ArrowUp']     : ['KeyJ','Numpad8'];
+    const drop  = isP1 ? ['Space']              : ['Numpad0'];
 
     if (!press) return;
 
-    if (left.includes(code)) { this.move(player, -1, 0); this.keyRepeat[code] = true; }
-    if (right.includes(code)) { this.move(player, 1, 0); this.keyRepeat[code] = true; }
-    if (down.includes(code)) { this.move(player, 0, 1); this.keyRepeat[code] = true; }
-    if (up.includes(code)) { this.rotate(player, 1); }
-    if (drop.includes(code)) { this.hardDrop(player); }
+    // Confusion effect: reverse left/right
+    let effectiveCode = code;
+    if (player.board.confusionTimer > 0) {
+      if (left.includes(code)) effectiveCode = right[0];
+      else if (right.includes(code)) effectiveCode = left[0];
+    }
+
+    if (left.includes(effectiveCode))  { this.move(player, -1, 0, pId); this.keyRepeat[code] = true; }
+    if (right.includes(effectiveCode)) { this.move(player, 1, 0, pId);  this.keyRepeat[code] = true; }
+    if (down.includes(effectiveCode))  { this.move(player, 0, 1, pId);  this.keyRepeat[code] = true; }
+    if (up.includes(effectiveCode))    { this.rotate(player, 1, pId); }
+    if (drop.includes(code))           { this.hardDrop(player, pId); }
   }
 
-  move(player, dx, dy) {
-    if (!player.current) return;
+  activateNextSkill(pId) {
+    const cards = pId === 1 ? this.skills.p1Cards : this.skills.p2Cards;
+    const idx = cards.findIndex(c => !c.used && !c.cooldown);
+    if (idx >= 0) {
+      this.useSkill(pId, idx);
+    }
+  }
+
+  useSkill(pId, idx) {
+    const cards = pId === 1 ? this.skills.p1Cards : this.skills.p2Cards;
+    const card = cards[idx];
+    if (!card || card.used || card.cooldown) return;
+
+    const player = pId === 1 ? this.p1 : this.p2;
+    const opponent = pId === 1 ? this.p2 : this.p1;
+    this.sound.skillCard();
+
+    switch (card.id) {
+      case 'cleaner': {
+        if (player.board.clearBottomNormalRow()) {
+          this.sound.cleanRow();
+        }
+        break;
+      }
+      case 'freeze': {
+        opponent.board.freezeTimer = 120; // 2 seconds at 60fps
+        this.sound.freeze();
+        break;
+      }
+      case 'confusion': {
+        opponent.board.confusionTimer = 180; // 3 seconds
+        this.sound.confusion();
+        break;
+      }
+      case 'doom': {
+        opponent.board.attackQueue += 6;
+        opponent.flash = 20;
+        opponent.shake = 15;
+        this.arc.add(pId, pId === 1 ? 2 : 1, 6, pId === 1 ? '#f0f' : '#0ff');
+        this.sound.attack();
+        break;
+      }
+      case 'shield': {
+        player.board.shieldTimer = 180; // 3 seconds
+        player.board.shieldActive = true;
+        break;
+      }
+      case 'frenzy': {
+        player.board.frenzyTimer = 240; // 4 seconds
+        break;
+      }
+      case 'thunder': {
+        const cleared = opponent.board.clearAllDirtyRows();
+        if (cleared > 0) this.sound.clear(cleared);
+        break;
+      }
+      case 'diamond': {
+        player.board.diamondTimer = 300; // 5 seconds
+        break;
+      }
+    }
+
+    card.used = true;
+    card.cooldown = 30; // 0.5s before can try to use (visual feedback)
+    this.skills.renderAll();
+
+    // Charge full sound
+    if (player.board.charge >= 100) {
+      this.sound.chargeFull();
+    }
+  }
+
+  move(player, dx, dy, pId) {
+    if (!player.current) return false;
+    // Freeze check
+    if (player.board.freezeTimer > 0) return false;
     const nx = player.current.x + dx;
     const ny = player.current.y + dy;
     if (!player.board.collides(player.current.shape, nx, ny)) {
       player.current.x = nx;
       player.current.y = ny;
+      if (dy > 0) this.sound.drop();
       return true;
     }
     return false;
   }
 
-  rotate(player, dir) {
+  rotate(player, dir, pId) {
     if (!player.current || player.current.type === 'O') return;
+    if (player.board.freezeTimer > 0) return;
     player.current.rotate(player.board, dir);
   }
 
-  hardDrop(player) {
+  hardDrop(player, pId) {
     if (!player.current) return;
+    if (player.board.freezeTimer > 0) return;
     const gy = player.board.getGhostY(player.current);
     const lines = gy - player.current.y;
     player.board.score += lines * 2;
     player.current.y = gy;
-    this.lockPiece(player);
+    this.lockPiece(player, pId);
   }
 
-  lockPiece(player) {
+  lockPiece(player, pId) {
+    this.sound.lock();
     const lines = player.board.lock(player.current);
+
     if (lines > 0) {
-      // Attack other player
+      this.sound.clear(lines);
       const other = player === this.p1 ? this.p2 : this.p1;
+      const otherId = player === this.p1 ? 2 : 1;
       let attackLines = lines;
-      // Charge bonus
+
+      // Charge multiplier
       let multiplier = 1;
       if (player.board.charge >= 70) multiplier = 2;
       else if (player.board.charge >= 30) multiplier = 1.5;
       attackLines = Math.round(attackLines * multiplier);
-      player.board.charge = Math.max(0, player.board.charge - 30);
+      player.board.charge = Math.max(0, player.board.charge - 20);
 
       if (attackLines > 0) {
-        other.board.attackQueue += attackLines;
-        other.flash = 20;
-        other.shake = 10;
-        this.addEffect(player === this.p1 ? this.p2 : this.p1, 'attack', attackLines);
+        // Check opponent shield
+        if (other.board.shieldActive) {
+          other.board.shieldActive = false;
+          other.board.shieldTimer = 0;
+          other.board.shieldCooldown = 180;
+          this.sound.shieldBlock();
+          this.showShieldBlockEffect(otherId);
+        } else {
+          other.board.attackQueue += attackLines;
+          other.flash = 20;
+          other.shake = 10;
+          this.arc.add(pId, otherId, attackLines, pId === 1 ? '#f0f' : '#0ff');
+          this.sound.attack();
+          this.sound.hit();
+        }
       }
 
       this.addEffect(player, 'clear', lines);
+      this.addEffect(other, 'attack', attackLines);
+
+      // Track stats
+      if (pId === 1) this.p1Stats.lines += lines;
+      else this.p2Stats.lines += lines;
     }
 
     if (player.board.gameOver()) {
@@ -651,78 +1200,136 @@ class TetrisBattle {
     this.spawnPieceFor(player);
   }
 
+  showShieldBlockEffect(pId) {
+    const canvas = document.getElementById(`player${pId}-canvas`);
+    canvas.classList.remove('shielded');
+    void canvas.offsetWidth; // reflow
+    canvas.classList.add('shielded');
+    setTimeout(() => canvas.classList.remove('shielded'), 300);
+  }
+
   addEffect(player, type, value) {
     this.effects.push({ player, type, value, timer: 30 });
   }
 
   endGame(winner) {
-    this.gameOver = true;
+    this.gameOverFlag = true;
     const el = document.getElementById('game-over-text');
     el.textContent = `🏆 ${winner} WINS!`;
     el.style.color = winner.includes('1') ? '#f0f' : '#0ff';
+    const statsEl = document.getElementById('game-over-stats');
+    statsEl.innerHTML = `
+      P1: ${this.p1Stats.lines} 行 / ${this.p1.board.score} 分<br>
+      P2: ${this.p2Stats.lines} 行 / ${this.p2.board.score} 分
+    `;
     document.getElementById('game-over-screen').classList.add('active');
+
+    if (winner.includes('1')) {
+      this.sound.victory();
+    } else {
+      this.sound.defeat();
+    }
   }
 
   // ---- Game Loop ----
   loop(timestamp) {
-    if (this.gameOver) return;
+    if (this.gameOverFlag) return;
 
     if (!this.paused) {
-      for (const p of [this.p1, this.p2]) {
-        this.updatePlayer(p, timestamp);
-      }
+      this.updatePlayer(this.p1, timestamp, 1);
+      this.updatePlayer(this.p2, timestamp, 2);
     }
 
     this.render();
     this.animFrame = requestAnimationFrame(t => this.loop(t));
   }
 
-  updatePlayer(player, timestamp) {
-    // Drop speed based on level
-    player.dropInterval = Math.max(50, 1000 - (player.board.level - 1) * 80);
-
-    if (timestamp - player.dropTimer > player.dropInterval) {
-      player.dropTimer = timestamp;
-      if (!this.move(player, 0, 1)) {
-        this.lockPiece(player);
-        if (this.gameOver) return;
+  updatePlayer(player, timestamp, pId) {
+    // Shield blocking cost
+    if (player.blocking && player.board.charge >= 10) {
+      player.board.charge -= 0.25; // ~15% per second at 60fps
+      player.board.shieldActive = true;
+      player.board.shieldTimer = Math.max(player.board.shieldTimer, 1);
+      if (player.board.charge < 10) {
+        player.board.shieldActive = false;
+        player.blocking = false;
       }
     }
 
-    // Key repeat for left/right
+    // Update shield indicator
+    const shieldEl = document.getElementById(`p${pId}-shield`);
+    if (player.board.shieldActive) {
+      shieldEl.classList.add('active');
+    } else {
+      shieldEl.classList.remove('active');
+    }
+
+    // Tick board effects
+    player.board.tickEffects();
+
+    // Freeze effect
+    if (player.board.freezeTimer > 0) return;
+
+    // Drop speed
+    const frenzy = player.board.frenzyTimer > 0;
+    const baseInterval = Math.max(50, 1000 - (player.board.level - 1) * 80);
+    player.dropInterval = frenzy ? baseInterval * 0.4 : baseInterval;
+
+    if (timestamp - player.dropTimer > player.dropInterval) {
+      player.dropTimer = timestamp;
+      if (!this.move(player, 0, 1, pId)) {
+        this.lockPiece(player, pId);
+        if (this.gameOverFlag) return;
+      }
+    }
+
+    // Key repeat
     for (const code of Object.keys(this.keys)) {
       if (this.keys[code] && this.keyRepeat[code]) {
-        const p = [this.p1, this.p2].find(pp => {
-          const isP1 = pp === this.p1;
-          const left = isP1 ? ['KeyA','ArrowLeft'] : ['KeyI','Numpad4'];
-          const right = isP1 ? ['KeyD','ArrowRight'] : ['KeyL','Numpad6'];
-          return left.includes(code) || right.includes(code);
-        });
-        if (p === player && player.dropTimer % 50 < 16) {
-          const dx = ['KeyA','ArrowLeft','KeyI','Numpad4'].includes(code) ? -1 : 1;
-          this.move(player, dx, 0);
+        const isP1 = pId === 1;
+        const left  = isP1 ? ['KeyA','ArrowLeft']  : ['KeyI','Numpad4'];
+        const right = isP1 ? ['KeyD','ArrowRight'] : ['KeyL','Numpad6'];
+        if (left.includes(code) || right.includes(code)) {
+          const dx = left.includes(code) ? -1 : 1;
+          if (player.dropTimer % 50 < 16) {
+            this.move(player, dx, 0, pId);
+          }
         }
       }
     }
 
     if (player.flash > 0) player.flash--;
     if (player.shake > 0) player.shake--;
+
+    // Confusion visual
+    const panel = document.getElementById(`p${pId}-panel`);
+    if (player.board.confusionTimer > 0) {
+      panel.classList.add('confusion-effect');
+    } else {
+      panel.classList.remove('confusion-effect');
+    }
+
+    // Freeze visual
+    if (player.board.freezeTimer > 0) {
+      panel.classList.add('freeze-effect');
+    } else {
+      panel.classList.remove('freeze-effect');
+    }
   }
 
   // ---- Rendering ----
   render() {
-    this.renderPlayer(this.p1, '#1a0a2a');
-    this.renderPlayer(this.p2, '#0a1a2a');
+    this.renderPlayer(this.p1, '#1a0a2a', 1);
+    this.renderPlayer(this.p2, '#0a1a2a', 2);
     this.updateHUD();
 
-    // Effects
     this.effects = this.effects.filter(e => {
       e.timer--;
       return e.timer > 0;
     });
   }
 
-  renderPlayer(player, bgColor) {
+  renderPlayer(player, bgColor, pId) {
     const ctx = player.ctx;
     const shake = player.shake;
     const sx = shake > 0 ? (Math.random() - 0.5) * 4 : 0;
@@ -735,7 +1342,7 @@ class TetrisBattle {
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, player.canvas.width, player.canvas.height);
 
-    // Grid lines
+    // Grid
     ctx.strokeStyle = 'rgba(255,255,255,0.04)';
     ctx.lineWidth = 1;
     for (let x = 0; x <= COLS; x++) {
@@ -745,17 +1352,18 @@ class TetrisBattle {
       ctx.beginPath(); ctx.moveTo(0, y*BLOCK); ctx.lineTo(COLS*BLOCK, y*BLOCK); ctx.stroke();
     }
 
-    // Board grid
+    // Board cells
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (player.board.grid[r][c]) {
-          this.drawBlock(ctx, c, r, player.board.grid[r][c]);
+          const isDirty = player.board.grid[r][c] === COLORS.dirty;
+          this.drawBlock(ctx, c, r, player.board.grid[r][c], isDirty);
         }
       }
     }
 
-    // Ghost piece
-    if (player.current && !this.gameOver) {
+    // Ghost + current piece
+    if (player.current && !this.gameOverFlag) {
       const gy = player.board.getGhostY(player.current);
       for (let r = 0; r < player.current.shape.length; r++) {
         for (let c = 0; c < player.current.shape[r].length; c++) {
@@ -773,21 +1381,34 @@ class TetrisBattle {
         }
       }
 
-      // Current piece
+      // Current piece (flash if frozen)
+      const frozen = player.board.freezeTimer > 0;
+      const flashAlpha = frozen ? (Math.sin(Date.now() / 80) * 0.3 + 0.7) : 1;
       for (let r = 0; r < player.current.shape.length; r++) {
         for (let c = 0; c < player.current.shape[r].length; c++) {
           if (player.current.shape[r][c]) {
             const py = player.current.y + r;
             const px = player.current.x + c;
             if (py >= 0) {
+              ctx.globalAlpha = flashAlpha;
               this.drawBlock(ctx, px, py, player.current.color);
+              ctx.globalAlpha = 1;
             }
           }
         }
       }
     }
 
-    // Attack flash overlay
+    // Shield overlay
+    if (player.board.shieldActive) {
+      ctx.strokeStyle = 'rgba(0, 170, 255, 0.7)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(1, 1, player.canvas.width - 2, player.canvas.height - 2);
+      ctx.fillStyle = 'rgba(0, 170, 255, 0.05)';
+      ctx.fillRect(0, 0, player.canvas.width, player.canvas.height);
+    }
+
+    // Attack flash
     if (player.flash > 0) {
       ctx.fillStyle = `rgba(255,0,0,${player.flash / 30})`;
       ctx.fillRect(0, 0, player.canvas.width, player.canvas.height);
@@ -800,41 +1421,56 @@ class TetrisBattle {
       ctx.fillStyle = '#fff';
       ctx.font = '6px Press Start 2P';
       ctx.textAlign = 'center';
-      ctx.fillText(`⬇ ${player.board.attackQueue} LINES`, player.canvas.width/2, 16);
+      ctx.fillText(`⬇ ${player.board.attackQueue}`, player.canvas.width/2, 16);
     }
 
     ctx.restore();
-
-    // Next piece preview
     this.renderNext(player);
+
+    // Skill card cooldown ticks
+    this.tickSkillCooldowns(pId);
   }
 
-  drawBlock(ctx, x, y, color) {
+  tickSkillCooldowns(pId) {
+    const cards = pId === 1 ? this.skills.p1Cards : this.skills.p2Cards;
+    cards.forEach(card => {
+      if (card.cooldown > 0) {
+        card.cooldown--;
+        if (card.cooldown === 0) {
+          // expired without use - mark as used
+        }
+      }
+    });
+  }
+
+  drawBlock(ctx, x, y, color, isDirty = false) {
     const px = x * BLOCK;
     const py = y * BLOCK;
     ctx.fillStyle = color;
     ctx.fillRect(px+1, py+1, BLOCK-2, BLOCK-2);
     // Highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillStyle = isDirty ? 'rgba(255,100,100,0.3)' : 'rgba(255,255,255,0.3)';
     ctx.fillRect(px+1, py+1, BLOCK-2, 3);
     ctx.fillRect(px+1, py+1, 3, BLOCK-2);
     // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillStyle = isDirty ? 'rgba(100,0,0,0.4)' : 'rgba(0,0,0,0.3)';
     ctx.fillRect(px+BLOCK-4, py+1, 3, BLOCK-2);
     ctx.fillRect(px+1, py+BLOCK-4, BLOCK-2, 3);
+    // Dirty indicator pattern
+    if (isDirty) {
+      ctx.fillStyle = 'rgba(255,0,0,0.15)';
+      ctx.fillRect(px+4, py+4, BLOCK-8, BLOCK-8);
+    }
   }
 
   renderNext(player) {
     const ctx = player.nextCtx;
     const next = player.next;
     ctx.clearRect(0, 0, 80, 80);
-
     if (!next) return;
-
     const size = next.shape.length * 16;
     const ox = (80 - size) / 2;
     const oy = (80 - size) / 2;
-
     for (let r = 0; r < next.shape.length; r++) {
       for (let c = 0; c < next.shape[r].length; c++) {
         if (next.shape[r][c]) {
@@ -883,7 +1519,6 @@ function runCountdown(callback) {
   el.classList.add('active');
   let count = 3;
   el.textContent = count;
-
   const timer = setInterval(() => {
     count--;
     if (count > 0) {
