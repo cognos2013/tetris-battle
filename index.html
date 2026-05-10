@@ -310,9 +310,14 @@
 <div id="start-screen">
   <h1>🧊 TETRIS BATTLE</h1>
   <p>双人对战俄罗斯方块<br>⚔️ 消除越多，攻击越狠 ⚔️</p>
-  <button id="start-btn" style="font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 24px;background:transparent;border:2px solid #f0f;color:#f0f;cursor:pointer;">
-    ▶ 开始对战
-  </button>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;">
+    <button id="start-btn-single" style="font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 24px;background:transparent;border:2px solid #0ff;color:#0ff;cursor:pointer;">
+      👤 单人游戏
+    </button>
+    <button id="start-btn-battle" style="font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 24px;background:transparent;border:2px solid #f0f;color:#f0f;cursor:pointer;">
+      ⚔️ 双人对战
+    </button>
+  </div>
   <div class="key-hint">
     P1: WASD / ←↑↓→ &nbsp;|&nbsp; P2: IJKL / 8579<br>
     空格 = 硬降 &nbsp;|&nbsp; Q = 暂停 &nbsp;|&nbsp; F = 技能卡 &nbsp;|&nbsp; 右Shift = 格挡
@@ -373,6 +378,22 @@
       <div class="shield-indicator" id="p2-shield">🛡️ SHIELD ACTIVE</div>
       <div class="skill-cards" id="p2-cards"></div>
       <canvas id="p2-next" width="80" height="80"></canvas>
+    </div>
+  </div>
+
+  <!-- Single player progress panel -->
+  <div id="single-panel" style="display:none; flex-direction:column; align-items:center; gap:12px;">
+    <div class="player-label" style="color:#ff0;text-shadow:0 0 8px #ff0;">🎯 单人模式</div>
+    <div class="stat-box" style="background:rgba(0,0,0,0.6);border:1px solid #ff0;padding:12px 16px;text-align:center;min-width:160px;">
+      <div style="font-size:7px;color:#aaa;margin-bottom:8px;">消行进度</div>
+      <div style="font-size:14px;color:#ff0;font-weight:bold;" id="single-progress">0 / 100</div>
+      <div class="charge-bar-container" style="margin-top:8px;">
+        <div class="charge-bar" id="single-progress-bar" style="width:0%;background:linear-gradient(90deg,#f0f,#ff0);"></div>
+      </div>
+    </div>
+    <div style="font-size:6px;color:#888;text-align:center;line-height:1.6;">
+      消除 100 行即可触发彩蛋<br>
+      消行越多，奖励越多
     </div>
   </div>
 </div>
@@ -907,6 +928,7 @@ class Board {
 // ============================================================
 class TetrisBattle {
   constructor() {
+    this.mode = 'battle'; // 'battle' or 'single'
     this.paused = false;
     this.gameOverFlag = false;
     this.animFrame = null;
@@ -916,6 +938,8 @@ class TetrisBattle {
     this.arc = new AttackArc(this);
     this.p1Stats = { lines: 0, score: 0 };
     this.p2Stats = { lines: 0, score: 0 };
+    this.singleProgress = 0;    // cumulative lines in single mode
+    this.singleEggTriggered = false; // one egg per run
 
     this.p1 = {
       board: new Board(),
@@ -953,6 +977,8 @@ class TetrisBattle {
     this.effects = [];
     this.p1Stats = { lines: 0, score: 0 };
     this.p2Stats = { lines: 0, score: 0 };
+    this.singleProgress = 0;
+    this.singleEggTriggered = false;
 
     for (const p of [this.p1, this.p2]) {
       p.board = new Board();
@@ -968,6 +994,17 @@ class TetrisBattle {
 
     this.spawnPieceFor(this.p1);
     this.spawnPieceFor(this.p2);
+
+    // Configure UI based on mode
+    if (this.mode === 'single') {
+      document.getElementById('p2-panel').style.display = 'none';
+      document.getElementById('vs-divider').style.display = 'none';
+      document.getElementById('single-panel').style.display = 'flex';
+    } else {
+      document.getElementById('p2-panel').style.display = 'flex';
+      document.getElementById('vs-divider').style.display = 'flex';
+      document.getElementById('single-panel').style.display = 'none';
+    }
 
     document.getElementById('game-wrapper').style.display = 'flex';
     document.getElementById('game-over-screen').classList.remove('active');
@@ -1220,6 +1257,16 @@ class TetrisBattle {
     }
 
     this.spawnPieceFor(player);
+
+    // Single-player: track cumulative lines for 100-line egg
+    if (this.mode === 'single' && pId === 1 && lines > 0) {
+      this.singleProgress += lines;
+      this.updateSingleProgressUI();
+      if (this.singleProgress >= 100 && !this.singleEggTriggered) {
+        this.singleEggTriggered = true;
+        setTimeout(() => this.showSingleWinEgg(), 300);
+      }
+    }
   }
 
   showShieldBlockEffect(pId) {
@@ -1300,6 +1347,59 @@ class TetrisBattle {
     });
   }
 
+  updateSingleProgressUI() {
+    const progress = Math.min(this.singleProgress, 100);
+    const pct = (progress / 100) * 100;
+    const el = document.getElementById('single-progress');
+    const bar = document.getElementById('single-progress-bar');
+    if (el) el.textContent = `${this.singleProgress} / 100`;
+    if (bar) bar.style.width = pct + '%';
+  }
+
+  showSingleWinEgg() {
+    if (Math.random() > WIN_EGG_PROB) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'win-egg-overlay';
+    overlay.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column;
+    `;
+    overlay.innerHTML = `
+      <div style="
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border: 2px solid #ff0; border-radius: 20px;
+        padding: 40px 60px; text-align: center;
+        box-shadow: 0 0 60px rgba(255,255,0,0.4);
+        animation: eggPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+        <div style="font-size: 28px; color: #ff0; font-weight: bold; margin-bottom: 12px;">
+          恭喜你，获得一张 100元 产品代金券！
+        </div>
+        <div style="font-size: 16px; color: #aaa; margin-bottom: 24px;">
+          请联系客户经理了解更多产品优惠
+        </div>
+        <button id="egg-close-btn" style="
+          background: linear-gradient(135deg, #ff0, #f0f);
+          border: none; color: #000; font-weight: bold;
+          padding: 12px 36px; border-radius: 30px; font-size: 16px;
+          cursor: pointer;
+        ">继续</button>
+      </div>
+      <style>
+        @keyframes eggPop {
+          from { transform: scale(0); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      </style>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#egg-close-btn').addEventListener('click', () => {
+      overlay.remove();
+    });
+  }
+
   // ---- Game Loop ----
   loop(timestamp) {
     if (this.gameOverFlag) return;
@@ -1307,7 +1407,9 @@ class TetrisBattle {
     try {
       if (!this.paused) {
         this.updatePlayer(this.p1, timestamp, 1);
-        this.updatePlayer(this.p2, timestamp, 2);
+        if (this.mode === 'battle') {
+          this.updatePlayer(this.p2, timestamp, 2);
+        }
       }
 
       this.render();
@@ -1598,10 +1700,17 @@ const game = new TetrisBattle();
 window.game = game;
 
 // ============================================================
-// START BUTTON
+// START BUTTONS
 // ============================================================
-document.getElementById('start-btn').addEventListener('click', () => {
+document.getElementById('start-btn-single').addEventListener('click', () => {
   document.getElementById('start-screen').style.display = 'none';
+  game.mode = 'single';
+  runCountdown(() => game.init());
+});
+
+document.getElementById('start-btn-battle').addEventListener('click', () => {
+  document.getElementById('start-screen').style.display = 'none';
+  game.mode = 'battle';
   runCountdown(() => game.init());
 });
 
