@@ -1474,20 +1474,8 @@ class TetrisBattle {
       }
     }
 
-    // Key repeat
-    for (const code of Object.keys(this.keys)) {
-      if (this.keys[code] && this.keyRepeat[code]) {
-        const isP1 = pId === 1;
-        const left  = isP1 ? ['KeyA','ArrowLeft']  : ['KeyI','Numpad4'];
-        const right = isP1 ? ['KeyD','ArrowRight'] : ['KeyL','Numpad6'];
-        if (left.includes(code) || right.includes(code)) {
-          const dx = left.includes(code) ? -1 : 1;
-          if (player.dropTimer % 50 < 16) {
-            this.move(player, dx, 0, pId);
-          }
-        }
-      }
-    }
+    // Note: key repeat is handled at keydown level (blocking repeat events).
+    // Game loop no longer does auto-repeat movement — one keydown = one move.
 
     if (player.flash > 0) player.flash--;
     if (player.shake > 0) player.shake--;
