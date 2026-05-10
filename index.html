@@ -1239,12 +1239,16 @@ class TetrisBattle {
   loop(timestamp) {
     if (this.gameOverFlag) return;
 
-    if (!this.paused) {
-      this.updatePlayer(this.p1, timestamp, 1);
-      this.updatePlayer(this.p2, timestamp, 2);
-    }
+    try {
+      if (!this.paused) {
+        this.updatePlayer(this.p1, timestamp, 1);
+        this.updatePlayer(this.p2, timestamp, 2);
+      }
 
-    this.render();
+      this.render();
+    } catch(e) {
+      console.error('Loop error:', e.message, 'at', e.filename, 'line', e.lineno);
+    }
     this.animFrame = requestAnimationFrame(t => this.loop(t));
   }
 
