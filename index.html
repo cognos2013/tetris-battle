@@ -1039,6 +1039,7 @@ class TetrisBattle {
   // ---- Controls ----
   setupControls() {
     document.addEventListener('keydown', e => {
+      if (this.keys[e.code]) return; // Block key repeat — must release and press again
       this.keys[e.code] = true;
 
       if (e.code === 'KeyQ') {
@@ -1259,8 +1260,9 @@ class TetrisBattle {
     this.spawnPieceFor(player);
 
     // Single-player: track cumulative lines for 100-line egg
+    // Layer scoring: 1 line = 1 layer, 2 lines = 4 layers, 3 lines = 9 layers, etc.
     if (this.mode === 'single' && pId === 1 && lines > 0) {
-      this.singleProgress += lines;
+      this.singleProgress += lines * lines;
       this.updateSingleProgressUI();
       if (this.singleProgress >= 100 && !this.singleEggTriggered) {
         this.singleEggTriggered = true;
@@ -1284,23 +1286,32 @@ class TetrisBattle {
   endGame(winner) {
     this.gameOverFlag = true;
     const el = document.getElementById('game-over-text');
-    el.textContent = `🏆 ${winner} WINS!`;
-    el.style.color = winner.includes('1') ? '#f0f' : '#0ff';
-    const statsEl = document.getElementById('game-over-stats');
-    statsEl.innerHTML = `
-      P1: ${this.p1Stats.lines} 行 / ${this.p1.board.score} 分<br>
-      P2: ${this.p2Stats.lines} 行 / ${this.p2.board.score} 分
-    `;
-    document.getElementById('game-over-screen').classList.add('active');
-
-    if (winner.includes('1')) {
-      this.sound.victory();
-    } else {
+    if (this.mode === 'single') {
+      el.textContent = '😢 不要气馁，祝您下次好运！';
+      el.style.color = '#ff0';
+      const statsEl = document.getElementById('game-over-stats');
+      statsEl.innerHTML = `
+        共消除 ${this.p1Stats.lines} 行 / ${this.p1.board.score} 分<br>
+        消行进度：${this.singleProgress} 层
+      `;
       this.sound.defeat();
+    } else {
+      el.textContent = `🏆 ${winner} WINS!`;
+      el.style.color = winner.includes('1') ? '#f0f' : '#0ff';
+      const statsEl = document.getElementById('game-over-stats');
+      statsEl.innerHTML = `
+        P1: ${this.p1Stats.lines} 行 / ${this.p1.board.score} 分<br>
+        P2: ${this.p2Stats.lines} 行 / ${this.p2.board.score} 分
+      `;
+      if (winner.includes('1')) {
+        this.sound.victory();
+      } else {
+        this.sound.defeat();
+      }
+      // 胜利彩蛋（80%概率）
+      this.showWinEgg();
     }
-
-    // 胜利彩蛋（80%概率）
-    this.showWinEgg();
+    document.getElementById('game-over-screen').classList.add('active');
   }
 
   showWinEgg() {
@@ -1445,9 +1456,14 @@ class TetrisBattle {
     // Freeze effect
     if (player.board.freezeTimer > 0) return;
 
-    // Drop speed
+    // Drop speed — single-player uses fixed slow speed, battle scales with level
     const frenzy = player.board.frenzyTimer > 0;
-    const baseInterval = Math.max(50, 1000 - (player.board.level - 1) * 80);
+    let baseInterval;
+    if (this.mode === 'single') {
+      baseInterval = 1000; // fixed 1 second in single mode
+    } else {
+      baseInterval = Math.max(50, 1000 - (player.board.level - 1) * 80);
+    }
     player.dropInterval = frenzy ? baseInterval * 0.4 : baseInterval;
 
     if (timestamp - player.dropTimer > player.dropInterval) {
